@@ -101,7 +101,3 @@ Policies can plan with different neighbour beliefs, including:
 - **diffusion** — plan-conditioned multi-hypothesis WM  
 
 Comparisons across these arms (and matched no-channel / geometry controls) are how the project separates ordinary risk-aware prediction from using the plan as a communication channel.
-
-## Citation
-
-If you use this code, please cite the associated MaC-PDWM paper (add BibTeX when available).
