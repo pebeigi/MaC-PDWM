@@ -1,0 +1,10 @@
+<nodes>
+    <node id="nS" x="0.0" y="-20.0" type="priority" rightOfWay="edgePriority"/>
+    <node id="nE" x="20.0" y="0.0" type="priority" rightOfWay="edgePriority"/>
+    <node id="nN" x="0.0" y="20.0" type="priority" rightOfWay="edgePriority"/>
+    <node id="nW" x="-20.0" y="0.0" type="priority" rightOfWay="edgePriority"/>
+    <node id="S_app" x="0.0" y="-170.0" type="priority"/>
+    <node id="E_app" x="170.0" y="0.0" type="priority"/>
+    <node id="N_app" x="0.0" y="170.0" type="priority"/>
+    <node id="W_app" x="-170.0" y="0.0" type="priority"/>
+</nodes>

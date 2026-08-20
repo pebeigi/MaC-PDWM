@@ -1,0 +1,6 @@
+numpy>=1.21
+matplotlib>=3.4
+torch>=1.10
+
+# SUMO Python bindings (also requires a system SUMO install; see README)
+# traci / sumolib are provided by the SUMO distribution.

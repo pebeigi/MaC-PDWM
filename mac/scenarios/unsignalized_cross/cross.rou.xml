@@ -1,0 +1,24 @@
+<routes>
+    <!-- A finite reaction time (actionStepLength) and a bounded emergency decel
+         are what make a badly timed ego manoeuvre genuinely unrecoverable. -->
+    <vType id="background" accel="2.6" decel="4.5" emergencyDecel="6.0" sigma="0.5"
+           length="5.0" minGap="2.5" maxSpeed="13.89" tau="1.0" carFollowModel="IDM"
+           actionStepLength="0.8" speedFactor="normc(1.0,0.1,0.8,1.2)"/>
+    <!-- Contesting drivers keep their right of way: they do not brake for a
+         vehicle that cuts into the conflict zone ahead of them. -->
+    <vType id="bg_contest" accel="2.6" decel="4.5" emergencyDecel="4.5" sigma="0.5"
+           length="5.0" minGap="2.5" maxSpeed="13.89" tau="0.9" carFollowModel="IDM"
+           actionStepLength="1.0" speedFactor="normc(1.05,0.1,0.85,1.25)"
+           jmIgnoreFoeProb="1.0" jmIgnoreFoeSpeed="30.0" jmTimegapMinor="0"
+           jmCrossingGap="0" color="0.2,0.4,1"/>
+    <vType id="ego" accel="3.0" decel="6.0" emergencyDecel="9.0" sigma="0.0"
+           length="5.0" minGap="2.0" maxSpeed="13.89" tau="1.0" carFollowModel="IDM"
+           color="1,0.4,0"/>
+
+    <route id="WE" edges="W_in E_out"/>
+    <route id="EW" edges="E_in W_out"/>
+    <route id="SN" edges="S_in N_out"/>
+    <route id="NS" edges="N_in S_out"/>
+    <route id="SW" edges="S_in W_out"/>
+    <route id="WN" edges="W_in N_out"/>
+</routes>

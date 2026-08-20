@@ -1,0 +1,14 @@
+<edges>
+    <edge id="circ_SE" from="nS" to="nE" numLanes="1" speed="8.33" priority="2" shape="0.000,-20.000 3.129,-19.754 6.180,-19.021 9.080,-17.820 11.756,-16.180 14.142,-14.142 16.180,-11.756 17.820,-9.080 19.021,-6.180 19.754,-3.129 20.000,0.000"/>
+    <edge id="circ_EN" from="nE" to="nN" numLanes="1" speed="8.33" priority="2" shape="20.000,0.000 19.754,3.129 19.021,6.180 17.820,9.080 16.180,11.756 14.142,14.142 11.756,16.180 9.080,17.820 6.180,19.021 3.129,19.754 0.000,20.000"/>
+    <edge id="circ_NW" from="nN" to="nW" numLanes="1" speed="8.33" priority="2" shape="0.000,20.000 -3.129,19.754 -6.180,19.021 -9.080,17.820 -11.756,16.180 -14.142,14.142 -16.180,11.756 -17.820,9.080 -19.021,6.180 -19.754,3.129 -20.000,0.000"/>
+    <edge id="circ_WS" from="nW" to="nS" numLanes="1" speed="8.33" priority="2" shape="-20.000,0.000 -19.754,-3.129 -19.021,-6.180 -17.820,-9.080 -16.180,-11.756 -14.142,-14.142 -11.756,-16.180 -9.080,-17.820 -6.180,-19.021 -3.129,-19.754 -0.000,-20.000"/>
+    <edge id="S_in"  from="S_app" to="nS"   numLanes="1" speed="13.89" priority="1"/>
+    <edge id="S_out" from="nS"    to="S_app" numLanes="1" speed="13.89" priority="1"/>
+    <edge id="E_in"  from="E_app" to="nE"   numLanes="1" speed="13.89" priority="1"/>
+    <edge id="E_out" from="nE"    to="E_app" numLanes="1" speed="13.89" priority="2"/>
+    <edge id="N_in"  from="N_app" to="nN"   numLanes="1" speed="13.89" priority="1"/>
+    <edge id="N_out" from="nN"    to="N_app" numLanes="1" speed="13.89" priority="2"/>
+    <edge id="W_in"  from="W_app" to="nW"   numLanes="1" speed="13.89" priority="1"/>
+    <edge id="W_out" from="nW"    to="W_app" numLanes="1" speed="13.89" priority="2"/>
+</edges>

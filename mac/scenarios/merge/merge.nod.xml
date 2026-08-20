@@ -1,0 +1,6 @@
+<nodes>
+    <node id="main_start" x="-300.0" y="0.0"  type="priority"/>
+    <node id="merge_pt"   x="0.0"    y="0.0"  type="zipper"/>
+    <node id="main_end"   x="300.0"  y="0.0"  type="priority"/>
+    <node id="ramp_start" x="-200.0" y="-40.0" type="priority"/>
+</nodes>
