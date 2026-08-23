@@ -223,7 +223,10 @@ def build_roundabout(out_dir, radius=20.0):
     Circulating traffic has priority (edgePriority). The ego enters from the
     south and exits north; the conflict is the south entry merge, which is the
     same single-conflict-point abstraction as the crossing and the zipper merge.
-    Background streams (west→east and north→south) both pass that merge.
+
+    Background OD covers all four arms (through + turns) so inflow/outflow is
+    not stuck on north/west→south only. Ego route SN is omitted from background
+    to avoid sharing the ego's exact path.
     """
     os.makedirs(out_dir, exist_ok=True)
     R = float(radius)
@@ -286,9 +289,22 @@ def build_roundabout(out_dir, radius=20.0):
            length="5.0" minGap="2.0" maxSpeed="{speed_app}" tau="1.0" carFollowModel="IDM"
            color="1,0.4,0"/>
 
+    <!-- Ego -->
     <route id="SN" edges="S_in circ_SE circ_EN N_out"/>
+    <!-- Through (180°) -->
     <route id="WE" edges="W_in circ_WS circ_SE E_out"/>
+    <route id="EW" edges="E_in circ_EN circ_NW W_out"/>
     <route id="NS" edges="N_in circ_NW circ_WS S_out"/>
+    <!-- Right turns (90°) -->
+    <route id="WS" edges="W_in circ_WS S_out"/>
+    <route id="EN" edges="E_in circ_EN N_out"/>
+    <route id="NW" edges="N_in circ_NW W_out"/>
+    <route id="SE" edges="S_in circ_SE E_out"/>
+    <!-- Left turns (270°) -->
+    <route id="WN" edges="W_in circ_WS circ_SE circ_EN N_out"/>
+    <route id="ES" edges="E_in circ_EN circ_NW circ_WS S_out"/>
+    <route id="NE" edges="N_in circ_NW circ_WS circ_SE E_out"/>
+    <route id="SW" edges="S_in circ_SE circ_EN circ_NW W_out"/>
 </routes>
 """
     _write(os.path.join(out_dir, "roundabout.rou.xml"), routes)

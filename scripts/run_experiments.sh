@@ -103,9 +103,12 @@ _gate() {
 
 _worldmodel() {
   local scen=$1 extra=""
-  # Roundabout intention labels were ~majority after arc-mixing; extra type
-  # weight keeps the head from being drowned by curved-trajectory FDE.
-  if [ "$scen" = roundabout ] || [ "$scen" = cross ]; then
+  # Cross/RA need heavier intent + plan-delta loss than merge: labelled fractions
+  # are lower and TV recovery lags the analytic kernel. Roundabout also trains
+  # the denoiser on interventional (paired) trajectories so Δ(u) is supervised.
+  if [ "$scen" = roundabout ]; then
+    extra="--type_weight 4.0 --delta_weight 2.5 --labelled_traj_weight 5.0 --interventional_trajectory"
+  elif [ "$scen" = cross ]; then
     extra="--type_weight 4.0 --delta_weight 1.5 --labelled_traj_weight 5.0"
   fi
   CUDA_VISIBLE_DEVICES=0 $PY -m mac.train_world_model \

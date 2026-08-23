@@ -11,7 +11,20 @@
            length="5.0" minGap="2.0" maxSpeed="13.89" tau="1.0" carFollowModel="IDM"
            color="1,0.4,0"/>
 
+    <!-- Ego -->
     <route id="SN" edges="S_in circ_SE circ_EN N_out"/>
+    <!-- Through (180°) -->
     <route id="WE" edges="W_in circ_WS circ_SE E_out"/>
+    <route id="EW" edges="E_in circ_EN circ_NW W_out"/>
     <route id="NS" edges="N_in circ_NW circ_WS S_out"/>
+    <!-- Right turns (90°) -->
+    <route id="WS" edges="W_in circ_WS S_out"/>
+    <route id="EN" edges="E_in circ_EN N_out"/>
+    <route id="NW" edges="N_in circ_NW W_out"/>
+    <route id="SE" edges="S_in circ_SE E_out"/>
+    <!-- Left turns (270°) -->
+    <route id="WN" edges="W_in circ_WS circ_SE circ_EN N_out"/>
+    <route id="ES" edges="E_in circ_EN circ_NW circ_WS S_out"/>
+    <route id="NE" edges="N_in circ_NW circ_WS circ_SE E_out"/>
+    <route id="SW" edges="S_in circ_SE circ_EN circ_NW W_out"/>
 </routes>

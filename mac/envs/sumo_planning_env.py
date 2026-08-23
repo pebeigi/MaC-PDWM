@@ -82,14 +82,23 @@ SCENARIOS: Dict[str, ScenarioSpec] = {
         ego_depart_speed=12.0,
         decision_distance=35.0,
     ),
-    # South entry merge of a 20 m single-lane roundabout. Circulating WE and NS
-    # streams both pass this point; the ego (SN) has to claim a gap there.
+    # South entry merge of a 20 m single-lane roundabout. Background OD is
+    # balanced across the four arms (through + turns); ego (SN) claims a gap
+    # at the south merge against traffic that actually uses circ_WS.
     "roundabout": ScenarioSpec(
         name="roundabout",
         sumocfg=os.path.join(SCENARIO_ROOT, "roundabout", "roundabout.sumocfg"),
         net_file=os.path.join(SCENARIO_ROOT, "roundabout", "roundabout.net.xml"),
         ego_routes=["SN"],
-        background_routes={"WE": 0.25, "NS": 0.20},
+        # Rates ≈ veh/s. Total ~0.50 ≈ old WE+NS demand, but origins/destinations
+        # are spread so N/W→S no longer dominates the ring.
+        # Routes that pass the south merge (circ_WS): WE, NS, WS, ES, NE, WN.
+        background_routes={
+            "WE": 0.07, "EW": 0.07, "NS": 0.05,          # through
+            "WN": 0.05, "ES": 0.045, "NE": 0.045,        # left
+            "WS": 0.03, "EN": 0.045, "NW": 0.04,         # right (non-S)
+            "SE": 0.025, "SW": 0.025,                    # light S-origin turns
+        },
         conflict_point=(0.0, -20.0),
         max_speed=13.89,
         ego_depart_pos=20.0,
