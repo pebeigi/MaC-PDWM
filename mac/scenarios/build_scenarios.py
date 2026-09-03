@@ -224,9 +224,10 @@ def build_roundabout(out_dir, radius=20.0):
     south and exits north; the conflict is the south entry merge, which is the
     same single-conflict-point abstraction as the crossing and the zipper merge.
 
-    Background OD covers all four arms (through + turns) so inflow/outflow is
-    not stuck on north/west→south only. Ego route SN is omitted from background
-    to avoid sharing the ego's exact path.
+    The full OD catalogue is emitted so demand tables can be swept, but two
+    routes are structurally off-limits as background: SE and SW start on S_in,
+    the ego's own insertion lane. Which routes actually receive demand is set by
+    ``background_routes`` on the scenario spec, not here.
     """
     os.makedirs(out_dir, exist_ok=True)
     R = float(radius)
@@ -299,6 +300,9 @@ def build_roundabout(out_dir, radius=20.0):
     <route id="WS" edges="W_in circ_WS S_out"/>
     <route id="EN" edges="E_in circ_EN N_out"/>
     <route id="NW" edges="N_in circ_NW W_out"/>
+    <!-- SE/SW start on S_in, the ego's own insertion lane. Defined for OD
+         sweeps but never assigned background demand: traffic here blocks the
+         ego before it can negotiate the merge. -->
     <route id="SE" edges="S_in circ_SE E_out"/>
     <!-- Left turns (270°) -->
     <route id="WN" edges="W_in circ_WS circ_SE circ_EN N_out"/>

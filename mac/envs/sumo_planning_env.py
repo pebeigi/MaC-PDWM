@@ -82,22 +82,31 @@ SCENARIOS: Dict[str, ScenarioSpec] = {
         ego_depart_speed=12.0,
         decision_distance=35.0,
     ),
-    # South entry merge of a 20 m single-lane roundabout. Background OD is
-    # balanced across the four arms (through + turns); ego (SN) claims a gap
-    # at the south merge against traffic that actually uses circ_WS.
+    # South entry merge of a 20 m single-lane roundabout. Background OD uses all
+    # four arms (through + turns) while leaving the ego's own approach lane and
+    # its downstream ring path clear; ego (SN) claims a gap at the south merge
+    # against traffic that actually uses circ_WS.
     "roundabout": ScenarioSpec(
         name="roundabout",
         sumocfg=os.path.join(SCENARIO_ROOT, "roundabout", "roundabout.sumocfg"),
         net_file=os.path.join(SCENARIO_ROOT, "roundabout", "roundabout.net.xml"),
         ego_routes=["SN"],
-        # Rates ≈ veh/s. Total ~0.50 ≈ old WE+NS demand, but origins/destinations
-        # are spread so N/W→S no longer dominates the ring.
-        # Routes that pass the south merge (circ_WS): WE, NS, WS, ES, NE, WN.
+        # Rates ≈ veh/s, selected by scripts/tune_roundabout_od.py. Two hard
+        # constraints, both of which an earlier "balanced" table violated:
+        #
+        #   nothing may use S_in   it is the ego's own insertion lane, so
+        #                          background there blocks the ego before it can
+        #                          negotiate anything (this is why SE/SW are gone)
+        #   circ_EN stays light    the ego needs it to leave after winning the
+        #                          merge, otherwise the merge outcome no longer
+        #                          decides the episode
+        #
+        # Routes that feed the south merge (circ_WS) and are therefore what the
+        # ego actually negotiates with: WE, WS, NS, NE, ES.
         background_routes={
-            "WE": 0.07, "EW": 0.07, "NS": 0.05,          # through
-            "WN": 0.05, "ES": 0.045, "NE": 0.045,        # left
-            "WS": 0.03, "EN": 0.045, "NW": 0.04,         # right (non-S)
-            "SE": 0.025, "SW": 0.025,                    # light S-origin turns
+            "WE": 0.10, "WS": 0.06,                       # W origin
+            "NS": 0.10, "NW": 0.05, "NE": 0.045,          # N origin
+            "EN": 0.03, "ES": 0.03,                       # light E origin
         },
         conflict_point=(0.0, -20.0),
         max_speed=13.89,

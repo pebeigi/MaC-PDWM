@@ -4,7 +4,8 @@ Five configurations share this script so the ablation is exact:
 
   --belief none      PPO on raw observations
   --belief geometry  PPO plus ego-plan vs constant-velocity neighbour risk
-  --belief kernel    geometry risk plus an approximate analytic channel feature
+  --belief kernel    geometry risk plus an analytic channel fitted offline
+  --belief oracle    the same, but reading the simulator's true channel
   --belief mean      PPO plus a deterministic single-future forecast
   --belief diffusion PPO plus the diffusion belief over counterfactual futures
   --belief history   PPO plus a history-only world model (plan input zeroed)
@@ -20,6 +21,7 @@ import torch
 
 from mac.agents.ppo import PPO, RolloutBuffer
 from mac.envs.sumo_planning_env import EnvConfig, SumoPlanningEnv, parse_type_probs
+from mac.fit_kernel import MARGIN_CLIP
 from mac.models.belief import DEFAULT_PROBE_ACCELS, BeliefEncoder, parse_probe_accels
 from mac.models.diffusion_world_model import DiffusionWorldModel
 
@@ -155,6 +157,79 @@ def make_oracle_fn(env, horizon=10):
     return oracle
 
 
+def make_fitted_kernel_fn(env, params, horizon=10):
+    """Analytic P(yield) from coefficients fitted offline by ``mac.fit_kernel``.
+
+    Unlike ``make_oracle_fn`` this reads nothing from ``env.drivers``: no true
+    coefficients, no latent ``types``, no ``resolved`` decisions, and not the
+    simulator's own intent EMA. Everything comes from the observable snapshot,
+    the known conflict point, and an EMA of past ego acceleration that this
+    closure maintains itself, so the ``kernel`` arm is a baseline a deployed
+    system could actually build rather than a privileged ceiling.
+    """
+    beta_margin = float(params["beta_margin"])
+    beta_intent = float(params["beta_intent"])
+    beta_bias = float(params["beta_bias"])
+    window = float(params["intent_window"])
+    horizon = int(params.get("horizon", horizon))
+    point = np.asarray(env.spec.conflict_point, dtype=float)
+    alpha = float(np.clip(env.dt / max(window, env.dt), 0.0, 1.0))
+    # Mutable so the EMA survives across calls; one update per simulator step,
+    # not per probe, or the average would advance len(probes) times too fast.
+    state = {"ema": 0.0, "speed": None, "step": -1}
+
+    def signed_ttc(x, y, speed, heading):
+        approach = point - np.asarray([x, y], dtype=float)
+        forward = np.asarray([np.cos(heading), np.sin(heading)])
+        sign = 1.0 if float(np.dot(approach, forward)) >= 0 else -1.0
+        return sign * float(np.linalg.norm(approach)) / max(float(speed), 0.5)
+
+    def kernel(neighbor_ids, probe_accel):
+        snapshot = env._last_snapshot or {}
+        out = np.full((len(neighbor_ids), 2), 0.5, dtype=np.float32)
+        # _ego_states() drops the vehicle id, and the kernel needs the pose, so
+        # the snapshot is indexed directly by the first ego still in play.
+        ego = next((snapshot[e.veh_id] for e in env.egos
+                    if not e.done and e.veh_id in snapshot), None)
+        if ego is None:
+            return out
+        ego_speed = float(ego["speed"])
+
+        if env.step_count != state["step"]:
+            if state["speed"] is not None:
+                observed = (ego_speed - state["speed"]) / env.dt
+                state["ema"] = (1.0 - alpha) * state["ema"] + alpha * observed
+            state["speed"] = ego_speed
+            state["step"] = env.step_count
+
+        # Roll the intent signal forward under the probe and average over the
+        # horizon, matching the feature ``mac.fit_kernel`` was fitted on.
+        steps = np.arange(1, horizon + 1)
+        ema = ((1.0 - alpha) ** steps * state["ema"]
+               + (1.0 - (1.0 - alpha) ** steps) * probe_accel)
+        intent = float(np.mean(ema))
+
+        ego_ttc = signed_ttc(ego["x"], ego["y"], ego_speed, ego["heading"])
+        for k, veh_id in enumerate(neighbor_ids):
+            other = snapshot.get(veh_id)
+            if other is None:
+                continue
+            margin = signed_ttc(other["x"], other["y"], other["speed"],
+                                other["heading"]) - ego_ttc
+            margin = float(np.clip(margin, -MARGIN_CLIP, MARGIN_CLIP))
+            logit = beta_margin * margin + beta_intent * intent + beta_bias
+            p = 1.0 / (1.0 + np.exp(-np.clip(logit, -30.0, 30.0)))
+            out[k] = (p, 1.0 - p)
+        return out
+
+    return kernel
+
+
+def load_kernel_params(path):
+    with open(path) as handle:
+        return json.load(handle)
+
+
 def build_encoder(mode, args, env, device):
     if mode == "none":
         return None
@@ -164,11 +239,27 @@ def build_encoder(mode, args, env, device):
         str(getattr(args, "belief_blocks", "")).split(",")
         if value.strip()]
     if mode in ("geometry", "kernel", "oracle"):
+        # "kernel" is the fair baseline: coefficients fitted offline from the
+        # same data the world model sees. "oracle" keeps the privileged form
+        # that reads the simulator's channel, as a diagnostic ceiling.
+        kernel_params = getattr(args, "kernel_params", "") or ""
+        if mode == "kernel":
+            if not kernel_params:
+                raise SystemExit(
+                    "--kernel_params is required for the kernel arm: fit it with "
+                    "`python -m mac.fit_kernel --data data/mac/<scene>.npz "
+                    "--out data/mac/kernel_<scene>.json`. Use --belief oracle for "
+                    "the privileged channel instead.")
+            oracle_fn = make_fitted_kernel_fn(env, load_kernel_params(kernel_params))
+        elif mode == "oracle":
+            oracle_fn = make_oracle_fn(env)
+        else:
+            oracle_fn = None
         encoder = BeliefEncoder(
             None, device, env.dt, env.spec.max_speed, 1.0, 1.0,
             n_samples=1, sample_steps=1, mode=mode, probe_accels=probes,
             history_len=5, future_len=20, n_neighbors=env.cfg.n_neighbors,
-            oracle_fn=make_oracle_fn(env) if mode in ("kernel", "oracle") else None,
+            oracle_fn=oracle_fn,
             conflict_point=env.spec.conflict_point,
             approach_edge_prefixes=env.spec.approach_edge_prefixes,
             decision_distance=env.cfg.decision_distance,
@@ -261,6 +352,8 @@ def main():
                                  "mean", "diffusion", "history"],
                         default="diffusion")
     parser.add_argument("--world_model", default="data/mac/world_model_cross.pt")
+    parser.add_argument("--kernel_params", default="",
+                        help="JSON from mac.fit_kernel; required by --belief kernel")
     parser.add_argument("--scenario", default="cross")
     parser.add_argument("--iterations", type=int, default=60)
     parser.add_argument("--steps_per_iter", type=int, default=2048)

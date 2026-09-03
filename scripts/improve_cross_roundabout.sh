@@ -175,15 +175,18 @@ cross_planners() {
     wm=data/mac/world_model_cross.pt
     if [ "$belief" = history ]; then wm=data/mac/world_model_history_cross.pt; fi
     for seed in $SEEDS; do
-      local blocks=""
+      local blocks="" kernel_extra=""
       if [ "$belief" = diffusion ]; then
-        blocks="--belief_blocks risk,clear,intent,shift"
+        blocks="--belief_blocks risk,clear,intent"
+      fi
+      if [ "$belief" = kernel ]; then
+        kernel_extra="--kernel_params data/mac/kernel_cross.json"
       fi
       # shellcheck disable=SC2086
       launch_planner $((i % NGPU)) --belief "$belief" --world_model "$wm" \
           --scenario cross --iterations "$ITERS" --seed "$seed" \
           --out_dir "$out" --tag "${belief}_seed${seed}" \
-          $blocks $CROSS_CHANNEL $PLAN_FLAGS \
+          $blocks $kernel_extra $CROSS_CHANNEL $PLAN_FLAGS \
           > "$LOGS/cross_${belief}_${seed}_improve.log" 2>&1
       i=$((i + 1))
     done
