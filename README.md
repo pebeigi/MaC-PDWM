@@ -1,8 +1,8 @@
 <h1 align="center">Motion as Communication: Plan-Conditioned Diffusion World Models for Negotiation at Unprotected Conflict Points</h1>
 
 <p align="center">
-  <img alt="Paper" src="https://img.shields.io/static/v1?label=Paper&message=IEEE%20IROS%2C%202026&color=green&style=flat-square">&nbsp;&nbsp;&nbsp;&nbsp;
-  <a href="https://worldmodelworkshop.github.io"><img alt="Workshop" src="https://img.shields.io/static/v1?label=Workshop&message=RoBoWoMo&color=orange&style=flat-square"></a>&nbsp;&nbsp;&nbsp;&nbsp;
+  <a href="https://2026.ieee-iros.org"><img alt="Conference" src="https://img.shields.io/static/v1?label=Conference&message=IEEE%20IROS%2C%202026&color=green&style=flat-square"></a>&nbsp;&nbsp;&nbsp;&nbsp;
+  <a href="https://worldmodelworkshop.github.io"><img alt="Workshop" src="https://img.shields.io/static/v1?label=Workshop&message=RoBoWoMo%20(Under%20Review)&color=orange&style=flat-square"></a>&nbsp;&nbsp;&nbsp;&nbsp;
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/static/v1?label=License&message=MIT&color=blue&style=flat-square"></a>
 </p>
 
