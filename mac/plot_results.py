@@ -132,7 +132,7 @@ def plot_beta_onoff(out_dir):
     groups = [
         (r"$\beta_2=0$", "data/mac/planner_nochannel",
          ("none", "history", "diffusion")),
-        (r"$\beta_2=2.5$", "data/mac/planner_cross",
+        (r"$\beta_2=4.0$", "data/mac/planner_cross",
          ("none", "history", "diffusion")),
     ]
     fig, ax = plt.subplots(figsize=(6.6, 3.3))
@@ -164,11 +164,8 @@ def plot_sweep(out_dir):
         s = int(blob["config"]["n_samples"])
         if blob.get("history"):
             by_s.setdefault(s, []).append(blob["history"][-1])
-    for path in glob.glob("data/mac/planner_cross/metrics_diffusion_*.json"):
-        blob = json.load(open(path))
-        if blob.get("history"):
-            by_s[8].append(blob["history"][-1])
-    xs = sorted(by_s)
+    # S=8 comes from copied planner_cross metrics in planner_sweep only.
+    xs = sorted(k for k, v in by_s.items() if v)
     fig, axes = plt.subplots(1, 2, figsize=(8.4, 3.15))
     for ax, key, scale, ylab, title in (
         (axes[0], "success_rate", 100.0, "Success (%)", "Success vs sample budget"),

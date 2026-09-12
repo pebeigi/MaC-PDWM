@@ -53,6 +53,8 @@ def main():
     parser.add_argument("--episodes", type=int, default=100)
     parser.add_argument("--bg_scale", type=float, default=1.5)
     parser.add_argument("--beta_intent", type=float, default=0.45)
+    parser.add_argument("--beta_margin", type=float, default=0.3)
+    parser.add_argument("--intent_window", type=float, default=0.8)
     parser.add_argument("--type_probs", default="0.4,0.25,0.35")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--out_dir", default="data/mac/baselines")
@@ -60,6 +62,8 @@ def main():
 
     cfg = EnvConfig(scenario=args.scenario, seed=args.seed, horizon=150,
                     bg_rate_scale=args.bg_scale, beta_intent=args.beta_intent,
+                    beta_margin=args.beta_margin,
+                    intent_window=args.intent_window,
                     type_probs=parse_type_probs(args.type_probs))
     env = SumoPlanningEnv(cfg, label=f"baseline_{args.scenario}_{args.seed}")
     os.makedirs(args.out_dir, exist_ok=True)

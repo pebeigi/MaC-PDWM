@@ -23,7 +23,8 @@ def main():
     parser.add_argument("--out_dir", default="data/mac/planner_shift")
     parser.add_argument("--episodes", type=int, default=50)
     parser.add_argument("--bg_scale", type=float, default=2.5)
-    parser.add_argument("--beta_intent", type=float, default=0.90)
+    parser.add_argument("--beta_intent", type=float, default=2.5)
+    parser.add_argument("--beta_margin", type=float, default=0.3)
     parser.add_argument("--type_probs", default="0.15,0.35,0.50")
     parser.add_argument("--scenario", default="cross")
     parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
@@ -55,11 +56,18 @@ def main():
         enc_args.n_samples = n_samples
         enc_args.sample_steps = sample_steps
         enc_args.probes = probes
+        enc_args.kernel_params = config.get("kernel_params", "") or ""
+        enc_args.belief_blocks = config.get("belief_blocks", "") or ""
 
         cfg = EnvConfig(
             scenario=args.scenario, seed=0, horizon=150,
             bg_rate_scale=args.bg_scale, beta_intent=args.beta_intent,
+            beta_margin=args.beta_margin,
+            intent_window=float(config.get("intent_window", 0.8) or 0.8),
             type_probs=parse_type_probs(args.type_probs),
+            courtesy_weight=float(config.get("courtesy_weight", 0.15) or 0.15),
+            courtesy_grace_steps=int(config.get("courtesy_grace_steps", 3) or 3),
+            time_penalty=float(config.get("time_penalty", 0.06) or 0.06),
         )
         env = SumoPlanningEnv(cfg, label=f"shift_{tag}")
         try:
@@ -87,6 +95,7 @@ def main():
                 "belief": belief,
                 "eval_bg_scale": args.bg_scale,
                 "eval_beta_intent": args.beta_intent,
+                "eval_beta_margin": args.beta_margin,
                 "eval_type_probs": args.type_probs,
                 "eval_scenario": args.scenario,
                 "shift": True,
